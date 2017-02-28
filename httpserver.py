@@ -14,6 +14,9 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import SocketServer
 
 class S(BaseHTTPRequestHandler):
+
+    postMethods = {}
+
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
@@ -28,10 +31,9 @@ class S(BaseHTTPRequestHandler):
         
     def do_POST(self):
         Auth = "my code is secret"
-	content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
         post_data = self.rfile.read(content_length) # <--- Gets the data itself
-	
-	
+        print self.path
         for content in self.headers:
             print "Header: " + content
             print type(content)
@@ -39,17 +41,39 @@ class S(BaseHTTPRequestHandler):
             print "Content:" + self.headers[content]
             print type(self.headers[content])
             print "---------------------------------------"
+        functiontoUse = self.postMethods[self.path]
+        functiontoUse(self.headers, self)
+        # print "Here is the body " + post_data
+        # try:
+        #     if self.headers["authorization"] == Auth:
+        #         self._set_headers()
+        #         self.wfile.write("<html><body><h1>Authorized</h1></body></html>")
+        #     else:
+        #         self._set_headers()
+        #         self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
+        # except (KeyError):
+        #     self._set_headers()
+        #     self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
 
-        print "Here is the body " + post_data
-	if  self.headers["authorization"] == Auth:
+
+def handleLogin(Headers, self):
+    Auth = "123"
+    try:
+        if Headers["authorization"] == Auth:
             self._set_headers()
             self.wfile.write("<html><body><h1>Authorized</h1></body></html>")
         else:
             self._set_headers()
             self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
+    except (KeyError):
+        self._set_headers()
+        self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
+
+
         
 def run(server_class=HTTPServer, handler_class=S, port=80):
     server_address = ('', port)
+    S.postMethods = {'/login': handleLogin}
     httpd = server_class(server_address, handler_class)
     print 'Starting httpd...'
     httpd.serve_forever()
