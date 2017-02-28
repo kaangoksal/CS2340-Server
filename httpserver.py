@@ -11,11 +11,12 @@ Send a POST request::
     curl -d "foo=bar&bin=baz" http://localhost
 """
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from WaterAppCommands import WaterAppApi
 import SocketServer
 
 class S(BaseHTTPRequestHandler):
 
-    postMethods = {}
+    RegisteredMethods = {}
 
     def _set_headers(self):
         self.send_response(200)
@@ -30,19 +31,34 @@ class S(BaseHTTPRequestHandler):
         self._set_headers()
         
     def do_POST(self):
-        Auth = "my code is secret"
-        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        #self.print_debug()
+
+        if self.RegisteredMethods.has_key(("post", self.path)):
+            print "[DEBUG] Found the method: " + self.path
+            functiontoUse = self.RegisteredMethods[("post", self.path)]
+            functiontoUse(self.headers, self)
+        else: #This means that such function does not exist in the server.
+            print "[ERROR] Method Does not exists: " + self.path
+            self.send_response(400)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write("<html><body><h1>Wrong Api</h1></body></html>")
+
+    def print_debug(self):
         print self.path
         for content in self.headers:
+            print "---------------------------------------"
             print "Header: " + content
             print type(content)
-            print "---------------------------------------"
+            print "\n"
             print "Content:" + self.headers[content]
             print type(self.headers[content])
             print "---------------------------------------"
-        functiontoUse = self.postMethods[self.path]
-        functiontoUse(self.headers, self)
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+
+
+
         # print "Here is the body " + post_data
         # try:
         #     if self.headers["authorization"] == Auth:
@@ -56,32 +72,41 @@ class S(BaseHTTPRequestHandler):
         #     self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
 
 
-def handleLogin(Headers, self):
-    Auth = "123"
-    try:
-        if Headers["authorization"] == Auth:
-            self._set_headers()
-            self.wfile.write("<html><body><h1>Authorized</h1></body></html>")
-        else:
-            self._set_headers()
-            self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
-    except (KeyError):
-        self._set_headers()
-        self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
 
 
-        
-def run(server_class=HTTPServer, handler_class=S, port=80):
-    server_address = ('', port)
-    S.postMethods = {'/login': handleLogin}
-    httpd = server_class(server_address, handler_class)
-    print 'Starting httpd...'
-    httpd.serve_forever()
+class MainServer:
+
+    registeredMethods = []
+
+    def registerMethod(self, method, url, protocol):
+        self.registeredMethods.append((protocol, url, method))
+
+    def syncMethodsWithServerInstance(self, ServerClass):
+        for methodTuple in self.registeredMethods:
+            (Protocol, Url, Method) = methodTuple
+            ServerClass.RegisteredMethods[(Protocol, Url)] = Method
+
+    def run(self, server_class=HTTPServer, handler_class=S, port=80):
+        server_address = ('', port)
+        #S.postMethods = {'/login': WaterAppApi.handleLogin}
+        self.syncMethodsWithServerInstance(handler_class)
+        httpd = server_class(server_address, handler_class)
+        print 'Starting httpd...'
+        httpd.serve_forever()
+
+
+
 
 if __name__ == "__main__":
     from sys import argv
 
+    x = MainServer()
+
+    x.registerMethod(WaterAppApi.handleLogin, "/login", "post")
+    x.registerMethod(WaterAppApi.registerAccount, "/register", "post")
+
+
     if len(argv) == 2:
-        run(port=int(argv[1]))
+        x.run(port=int(argv[1]))
     else:
-        run()
+        x.run()
