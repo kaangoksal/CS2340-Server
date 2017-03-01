@@ -4,30 +4,55 @@ import MySQLdb
 from pprint import pprint
 
 class WaterAppApi():
+    MySQLhost = "localhost"
+    MySQLusername = "na na na"
+    MySQLpassword = "na na na"
+    database = "waterapp"
 
     @staticmethod
-    def handleLogin(Headers, self):
-        Auth = "123"
+    def handleLogin(Headers, datain):
         try:
-            if Headers["authorization"] == Auth:
-                self._set_headers()
-                self.wfile.write("<html><body><h1>Authorized</h1></body></html>")
+            content_length = int(datain.headers['Content-Length'])
+            post_data = datain.rfile.read(content_length)
+            parsedJson = json.loads(post_data)
+            Email = parsedJson["email"]
+            Username = parsedJson["username"]
+            Password = parsedJson["password"]
+
+            global MySQLhost
+            global MySQLusername
+            global MySQLpassword
+            global database
+            DataBase = MySQLdb.connect(MySQLhost, MySQLusername, MySQLpassword, database)
+            cursor = DataBase.cursor()
+
+            cursor.execute("SELECT password FROM users where email = \"%s\" " % Email)
+            DBpassword = cursor.fetchone()
+
+            if DBpassword != None:
+                (DBpassword,) = DBpassword
+                if DBpassword == Password:
+                    datain._set_headers()
+                    datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
+                else:
+                    datain._set_headers()
+                    datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
             else:
-                self._set_headers()
-                self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
-        except (KeyError):
-            self._set_headers()
-            self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
+                datain._set_headers()
+                datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
+            DataBase.close()
+        except(Exception):
+            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- handleLogin: Login failed"
+            datain._set_headers()
+            datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
+
 
     @staticmethod
     def registerAccount(Headers, datain):
-
-        MySQLhost = "localhost"
-        MySQLusername = "na na na"
-        MySQLpassword = "na na na"
-        database = "waterapp"
-
-
+        global MySQLhost
+        global MySQLusername
+        global MySQLpassword
+        global database
         try:
             #print "[DEBUG] - registerAccount:"
             content_length = int(datain.headers['Content-Length'])
@@ -39,13 +64,11 @@ class WaterAppApi():
             Password = parsedJson["password"]
             Token    = parsedJson["token"]
 
-
-
             DataBase = MySQLdb.connect(MySQLhost, MySQLusername, MySQLpassword, database)
 
             cursor = DataBase.cursor()
 
-            cursor.execute("SELECT email FROM users where email = \"%s\" " % Email )
+            cursor.execute("SELECT email FROM users where email = \"%s\" " % Email)
             EmailDBResult = cursor.fetchone()
             cursor.execute("SELECT username FROM users where username = \"%s\" " % Username)
             UsernameDBResult = cursor.fetchone()
@@ -70,13 +93,13 @@ class WaterAppApi():
                 DataBase.close()
             else:
                 if EmailDBResult != None:
-			(EmailDBResult,) = EmailDBResult
-		else:
-			EmailDBResult = "None"
+                    (EmailDBResult,) = EmailDBResult
+                else:
+                    EmailDBResult = "None"
                 if UsernameDBResult != None:
-			(UsernameDBResult,) = UsernameDBResult
-		else:
-			UsernameDBResult = "None"
+                    (UsernameDBResult,) = UsernameDBResult
+                else:
+                    UsernameDBResult = "None"
 
                 print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- registerAccount: Registeration failed " + EmailDBResult  + " " + UsernameDBResult
                 datain._set_headers()
