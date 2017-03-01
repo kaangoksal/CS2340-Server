@@ -1,5 +1,6 @@
 
 import json
+import MySQLdb
 from pprint import pprint
 
 class WaterAppApi():
@@ -20,18 +21,69 @@ class WaterAppApi():
 
     @staticmethod
     def registerAccount(Headers, datain):
+
+        MySQLhost = "localhost"
+        MySQLusername = "yok oyle kolay patates"
+        MySQLpassword = "hadi bakim baska kapiya"
+        database = "waterapp"
+
+
         try:
-            print "[DEBUG] - registerAccount: I'm handling it"
+            print "[DEBUG] - registerAccount:"
             content_length = int(datain.headers['Content-Length'])
             post_data = datain.rfile.read(content_length)
             parsedJson = json.loads(post_data)
 
-            print "email " + parsedJson["email"]
-            print bcolors.OKBLUE +"password " + parsedJson["password"] + bcolors.ENDC
+            Email = parsedJson["email"]
+            Username = parsedJson["username"]
+            Password = parsedJson["password"]
+            Token    = parsedJson["token"]
 
-            datain._set_headers()
-            datain.wfile.write("<html><body><h1>User Account Registered</h1></body></html>")
-            print "DONE"
+
+
+            DataBase = MySQLdb.connect(MySQLhost, MySQLusername, MySQLpassword, database)
+
+            cursor = DataBase.cursor()
+
+            cursor.execute("SELECT email FROM users where email = \"%s\" " % Email )
+            EmailDBResult = cursor.fetchone()
+            cursor.execute("SELECT username FROM users where username = \"%s\" " % Username)
+            UsernameDBResult = cursor.fetchone()
+
+
+            if EmailDBResult == None and UsernameDBResult == None:
+                print "[DEBUG] Registering User"
+                print "email " + parsedJson["email"]
+                print "username " + parsedJson["username"]
+                print bcolors.OKBLUE +"password " + parsedJson["password"] + bcolors.ENDC
+                print "token " + parsedJson["token"]
+                try:
+                    cursor.execute("INSERT INTO users(email, username, password, token) VALUES \
+        ('%s', '%s', '%s', '%s')" % (Email, Username, Password, Token))
+                    DataBase.commit()
+                    datain._set_headers()
+                    datain.wfile.write("<html><body><h1>User Account Registered</h1></body></html>")
+                    print "[DEBUG] - registerAccount: Account registered for "
+                except:
+                    DataBase.rollback()
+                    print "Error"
+                DataBase.close()
+            else:
+                print "[ERROR] - registerAccount: Registeration failed " + EmailDBResult + " " + UsernameDBResult
+                datain._set_headers()
+                datain.wfile.write("<html><body><h1>Registration Failed</h1></body></html>")
+            # username
+            # password
+            # email
+            # account
+            # type
+            # token(to
+            # send
+            # push
+            # notification)
+            # created_at
+
+
 
         except (KeyError):
             print "[ERROR] - registerAccount: Registeration failed"
