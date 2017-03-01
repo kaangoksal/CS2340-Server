@@ -23,13 +23,13 @@ class WaterAppApi():
     def registerAccount(Headers, datain):
 
         MySQLhost = "localhost"
-        MySQLusername = "yok oyle kolay patates"
-        MySQLpassword = "hadi bakim baska kapiya"
+        MySQLusername = "na na na"
+        MySQLpassword = "na na na"
         database = "waterapp"
 
 
         try:
-            print "[DEBUG] - registerAccount:"
+            #print "[DEBUG] - registerAccount:"
             content_length = int(datain.headers['Content-Length'])
             post_data = datain.rfile.read(content_length)
             parsedJson = json.loads(post_data)
@@ -52,7 +52,7 @@ class WaterAppApi():
 
 
             if EmailDBResult == None and UsernameDBResult == None:
-                print "[DEBUG] Registering User"
+                print "[DEBUG] - registerAccount: Registering User"
                 print "email " + parsedJson["email"]
                 print "username " + parsedJson["username"]
                 print bcolors.OKBLUE +"password " + parsedJson["password"] + bcolors.ENDC
@@ -66,10 +66,19 @@ class WaterAppApi():
                     print "[DEBUG] - registerAccount: Account registered for "
                 except:
                     DataBase.rollback()
-                    print "Error"
+                    print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- registerAccount: MySQL Commit Failed"
                 DataBase.close()
             else:
-                print "[ERROR] - registerAccount: Registeration failed " + EmailDBResult + " " + UsernameDBResult
+                if EmailDBResult != None:
+			(EmailDBResult,) = EmailDBResult
+		else:
+			EmailDBResult = "None"
+                if UsernameDBResult != None:
+			(UsernameDBResult,) = UsernameDBResult
+		else:
+			UsernameDBResult = "None"
+
+                print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- registerAccount: Registeration failed " + EmailDBResult  + " " + UsernameDBResult
                 datain._set_headers()
                 datain.wfile.write("<html><body><h1>Registration Failed</h1></body></html>")
             # username
@@ -86,7 +95,7 @@ class WaterAppApi():
 
 
         except (KeyError):
-            print "[ERROR] - registerAccount: Registeration failed"
+            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- registerAccount: Registeration failed"
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Registration Failed</h1></body></html>")
 
