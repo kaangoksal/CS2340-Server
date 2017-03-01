@@ -1,13 +1,17 @@
-
+import sys
 import json
 import MySQLdb
 from pprint import pprint
 
 class WaterAppApi():
-    MySQLhost = "localhost"
-    MySQLusername = "na na na"
-    MySQLpassword = "na na na"
-    database = "waterapp"
+    
+    @staticmethod
+    def mysql_connection():
+       MySQLhost = "localhost"
+       MySQLusername = "python_backend"
+       MySQLpassword = "Secur1ty_1s_sexy"
+       database = "waterapp"
+       return MySQLdb.connect(MySQLhost, MySQLusername, MySQLpassword, database)
 
     @staticmethod
     def handleLogin(Headers, datain):
@@ -19,11 +23,7 @@ class WaterAppApi():
             Username = parsedJson["username"]
             Password = parsedJson["password"]
 
-            global MySQLhost
-            global MySQLusername
-            global MySQLpassword
-            global database
-            DataBase = MySQLdb.connect(MySQLhost, MySQLusername, MySQLpassword, database)
+            DataBase = WaterAppApi.mysql_connection()
             cursor = DataBase.cursor()
 
             cursor.execute("SELECT password FROM users where email = \"%s\" " % Email)
@@ -33,26 +33,23 @@ class WaterAppApi():
                 (DBpassword,) = DBpassword
                 if DBpassword == Password:
                     datain._set_headers()
-                    datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
+                    datain.wfile.write("<html><body><h1>Successful</h1></body></html>")
                 else:
                     datain._set_headers()
-                    datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
+                    datain.wfile.write("<html><body><h1>Login Failed, Wrong Password</h1></body></html>")
             else:
                 datain._set_headers()
-                datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
+                datain.wfile.write("<html><body><h1>Login Failed not registered</h1></body></html>")
             DataBase.close()
-        except(Exception):
+        except(KeyError):
             print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- handleLogin: Login failed"
+            print sys.exc_info()[0]
             datain._set_headers()
-            datain.wfile.write("<html><body><h1>Login Failed</h1></body></html>")
+            datain.wfile.write("<html><body><h1>Login Failed Exception</h1></body></html>")
 
 
     @staticmethod
     def registerAccount(Headers, datain):
-        global MySQLhost
-        global MySQLusername
-        global MySQLpassword
-        global database
         try:
             #print "[DEBUG] - registerAccount:"
             content_length = int(datain.headers['Content-Length'])
@@ -64,8 +61,7 @@ class WaterAppApi():
             Password = parsedJson["password"]
             Token    = parsedJson["token"]
 
-            DataBase = MySQLdb.connect(MySQLhost, MySQLusername, MySQLpassword, database)
-
+            DataBase = WaterAppApi.mysql_connection()
             cursor = DataBase.cursor()
 
             cursor.execute("SELECT email FROM users where email = \"%s\" " % Email)
