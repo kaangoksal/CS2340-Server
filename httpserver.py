@@ -104,6 +104,9 @@ if __name__ == "__main__":
 
     x.registerMethod(WaterAppApi.handleLogin, "/login", "post")
     x.registerMethod(WaterAppApi.registerAccount, "/register", "post")
+    x.registerMethod(WaterAppApi.addWaterReport, "/add_water_report", "post")
+    x.registerMethod(WaterAppApi.editUser, "/edit_user", "post")
+
 
 
     if len(argv) == 2:

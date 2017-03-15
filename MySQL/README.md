@@ -7,6 +7,21 @@ First we need to create a database
 
 Then we will create the neccessary tables  
 
+
+
+**Water Report Table**
+
+CREATE TABLE `reports` (  
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,  
+  `report_number` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,  
+  `reporter` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,  
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,  
+  `data` text COLLATE utf8mb4_unicode_ci NOT NULL,  
+  PRIMARY KEY (`report_number`)  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
+
+**Users Table**  
+
 CREATE TABLE `users` (  
   `username` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,  
   `password` text COLLATE utf8mb4_unicode_ci NOT NULL,  
@@ -47,4 +62,5 @@ grant select on waterapp.users to 'username'@'localhost';
 grant insert on waterapp.users to 'username'@'localhost';  
 grant delete on waterapp.users to 'username'@'localhost';  
 grant update on waterapp.users to 'username'@'localhost';  
+
 
