@@ -111,8 +111,6 @@ class WaterAppApi():
             # notification)
             # created_at
 
-
-
         except (KeyError):
             print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- registerAccount: Registeration failed"
             datain._set_headers()
@@ -146,7 +144,7 @@ class WaterAppApi():
 
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Report Added Successfully</h1></body></html>")
-            print "[DEBUG] - registerAccount: Account registered for "
+            print "[DEBUG] - AddWaterReport:Success "
 
 
         except (KeyError):
@@ -180,11 +178,11 @@ class WaterAppApi():
 
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Here are the reports</h1></body></html>")
-            print "[DEBUG] - registerAccount: Account registered for "
+            print "[DEBUG] - getWaterReport: SUccessful "
 
 
         except (KeyError):
-            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- AddWaterReport: Failed"
+            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- getWaterReport: Failed"
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Fetch waterreports Failed</h1></body></html>")
 
@@ -214,7 +212,7 @@ class WaterAppApi():
 
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Here are the reports</h1></body></html>")
-            print "[DEBUG] - registerAccount: Account registered for "
+            print "[DEBUG] - deleteWaterReport: water report deleted "
 
 
         except (KeyError):
@@ -225,7 +223,7 @@ class WaterAppApi():
     @staticmethod
     def editWaterReport(Headers, datain):
         try:
-            print "[DEBUG] - deleteWaterReport:"
+            print "[DEBUG] - editWaterReport:"
             content_length = int(datain.headers['Content-Length'])
             post_data = datain.rfile.read(content_length)
             parsedJson = json.loads(post_data)
@@ -254,10 +252,10 @@ class WaterAppApi():
             print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- editWaterReport: Failed"
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Fetch waterreports Failed</h1></body></html>")
-
+    @staticmethod
     def editUser(Headers, datain):
         try:
-            print "[DEBUG] - deleteWaterReport:"
+            print "[DEBUG] - editUser:"
             content_length = int(datain.headers['Content-Length'])
             post_data = datain.rfile.read(content_length)
             parsedJson = json.loads(post_data)
@@ -276,7 +274,7 @@ class WaterAppApi():
 
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Successful</h1></body></html>")
-            print "[DEBUG] - editWaterReport: report edited "
+            print "[DEBUG] - editUser: user edited "
 
 
         except (KeyError):
