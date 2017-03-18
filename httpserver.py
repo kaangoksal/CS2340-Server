@@ -13,10 +13,12 @@ Send a POST request::
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from WaterAppCommands import WaterAppApi
 import SocketServer
+import ConfigParser
 
 class S(BaseHTTPRequestHandler):
 
     RegisteredMethods = {}
+
 
     def _set_headers(self):
         self.send_response(200)
@@ -101,11 +103,12 @@ if __name__ == "__main__":
     from sys import argv
 
     x = MainServer()
-
+    #registering methods.
     x.registerMethod(WaterAppApi.handleLogin, "/login", "post")
     x.registerMethod(WaterAppApi.registerAccount, "/register", "post")
     x.registerMethod(WaterAppApi.addWaterReport, "/add_water_report", "post")
     x.registerMethod(WaterAppApi.editUser, "/edit_user", "post")
+    x.registerMethod(WaterAppApi.test, "/test", "post")
 
 
 
