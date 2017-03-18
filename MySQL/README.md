@@ -63,4 +63,8 @@ grant insert on waterapp.users to 'username'@'localhost';
 grant delete on waterapp.users to 'username'@'localhost';  
 grant update on waterapp.users to 'username'@'localhost';  
 
+grant select on waterapp.reports to 'python_backend'@'localhost';  
+grant insert on waterapp.reports to 'python_backend'@'localhost';  
+grant delete on waterapp.reports to 'python_backend'@'localhost';  
+grant update on waterapp.reports to 'python_backend'@'localhost';  
 
