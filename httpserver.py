@@ -33,7 +33,6 @@ class S(BaseHTTPRequestHandler):
         self._set_headers()
         
     def do_POST(self):
-        #self.print_debug()
 
         if self.RegisteredMethods.has_key(("post", self.path)):
             print "[DEBUG] Found the method: " + self.path
@@ -46,35 +45,18 @@ class S(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write("<html><body><h1>Wrong Api</h1></body></html>")
 
-    def print_debug(self):
-        print self.path
-        for content in self.headers:
-            print "---------------------------------------"
-            print "Header: " + content
-            print type(content)
-            print "\n"
-            print "Content:" + self.headers[content]
-            print type(self.headers[content])
-            print "---------------------------------------"
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-
-
-
-        # print "Here is the body " + post_data
-        # try:
-        #     if self.headers["authorization"] == Auth:
-        #         self._set_headers()
-        #         self.wfile.write("<html><body><h1>Authorized</h1></body></html>")
-        #     else:
-        #         self._set_headers()
-        #         self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
-        # except (KeyError):
-        #     self._set_headers()
-        #     self.wfile.write("<html><body><h1>Authorization failed</h1></body></html>")
-
-
-
+    # def print_debug(self):
+    #     print self.path
+    #     for content in self.headers:
+    #         print "---------------------------------------"
+    #         print "Header: " + content
+    #         print type(content)
+    #         print "\n"
+    #         print "Content:" + self.headers[content]
+    #         print type(self.headers[content])
+    #         print "---------------------------------------"
+    #         content_length = int(self.headers['Content-Length'])
+    #         post_data = self.rfile.read(content_length)
 
 class MainServer:
 
@@ -109,6 +91,7 @@ if __name__ == "__main__":
     x.registerMethod(WaterAppApi.addWaterReport, "/add_water_report", "post")
     x.registerMethod(WaterAppApi.editUser, "/edit_user", "post")
     x.registerMethod(WaterAppApi.test, "/test", "post")
+    x.registerMethod(WaterAppApi.getWaterReports, "/get_water_reports", "post")
 
 
 

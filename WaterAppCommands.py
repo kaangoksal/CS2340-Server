@@ -64,37 +64,16 @@ class WaterAppApi():
     """
     @staticmethod
     def handleLogin(Headers, datain):
-        try:
-            content_length = int(datain.headers['Content-Length'])
-            post_data = datain.rfile.read(content_length)
-            parsedJson = json.loads(post_data)
-            Email = parsedJson["email"]
-            Username = parsedJson["username"]
-            Password = parsedJson["password"]
+        auth_string = Headers["Authorization"]
+        auth_string = auth_string[auth_string.index(" ") + 1:]
 
-            DataBase = WaterAppApi.mysql_connection()
-            cursor = DataBase.cursor()
-
-            cursor.execute("SELECT password FROM users where email = \"%s\" " % Email)
-            DBpassword = cursor.fetchone()
-
-            if DBpassword != None:
-                (DBpassword,) = DBpassword
-                if DBpassword == Password:
-                    datain._set_headers()
-                    datain.wfile.write("<html><body><h1>Successful</h1></body></html>")
-                else:
-                    datain._set_headers()
-                    datain.wfile.write("<html><body><h1>Login Failed, Wrong Password</h1></body></html>")
-            else:
-                datain._set_headers()
-                datain.wfile.write("<html><body><h1>Login Failed not registered</h1></body></html>")
-            DataBase.close()
-        except(KeyError):
-            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- handleLogin: Login failed"
-            print sys.exc_info()[0]
+        if WaterAppApi.authenticate(auth_string):
             datain._set_headers()
-            datain.wfile.write("<html><body><h1>Login Failed Exception</h1></body></html>")
+            datain.wfile.write("<html><body><h1>Successful</h1></body></html>")
+        else:
+            datain._set_headers()
+            datain.wfile.write("<html><body><h1>Login Failed, Wrong Password</h1></body></html>")
+            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- handleLogin: Login failed"
 
     """
     This function registers an account,
@@ -198,16 +177,15 @@ class WaterAppApi():
                 DataBase = WaterAppApi.mysql_connection()
                 cursor = DataBase.cursor()
 
-                cursor.execute("insert into reports (date, report_number,"
-                               " reporter, location, data) VALUES ( '%s', '%s', '%s', '%s')" % (
+                cursor.execute("insert into reports (date, report_number, reporter, location, data) VALUES ( '%s', '%s', '%s', '%s', '%s')" % (
                                datetime, report_number, reporter, location, data))
                 DataBase.commit()
-
                 print "[DEBUG] - addWaterReport: Adding Water Report"
                 print "date " + parsedJson["date"]
                 print "report_number " + parsedJson["report_number"]
                 print bcolors.OKBLUE + "reporter " + parsedJson["reporter"] + bcolors.ENDC
                 print "location " + parsedJson["location"]
+                print "data " + parsedJson["data"]
 
                 datain._set_headers()
                 datain.wfile.write("<html><body><h1>Report Added Successfully</h1></body></html>")
@@ -225,7 +203,7 @@ class WaterAppApi():
 
 
     @staticmethod
-    def getWaterRepots(Headers, datain):
+    def getWaterReports(Headers, datain):
         auth_string = Headers["Authorization"]
         auth_string = auth_string[auth_string.index(" ") + 1:]
 
