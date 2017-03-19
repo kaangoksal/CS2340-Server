@@ -173,12 +173,12 @@ class WaterAppApi():
                 reporter = parsedJson["reporter"]
                 location = parsedJson["location"]
                 data = parsedJson["data"]
-
+                print "[DEBUG] - AddWaterReport: datetime %s, reportnumber %s, reporter %s, location %s data %s " % (datetime,report_number, reporter, location,data)
                 DataBase = WaterAppApi.mysql_connection()
                 cursor = DataBase.cursor()
 
                 cursor.execute("insert into reports (date, report_number, reporter, location, data) VALUES ( '%s', '%s', '%s', '%s', '%s')" % (
-                               datetime, report_number, reporter, location, data))
+                                   datetime, report_number, reporter, location, data))
                 DataBase.commit()
                 print "[DEBUG] - addWaterReport: Adding Water Report"
                 print "date " + parsedJson["date"]
@@ -191,9 +191,9 @@ class WaterAppApi():
                 datain.wfile.write("<html><body><h1>Report Added Successfully</h1></body></html>")
                 print "[DEBUG] - AddWaterReport:Success "
 
-
-            except (KeyError):
+            except Exception, e:
                 print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- AddWaterReport: Failed"
+                print e
                 datain._set_headers()
                 datain.wfile.write("<html><body><h1>AddWaterReport Failed</h1></body></html>")
         else:
@@ -209,20 +209,38 @@ class WaterAppApi():
 
         if WaterAppApi.authenticate(auth_string):
             try:
-                print "[DEBUG] - getWaterReports:"
-
                 data_base = WaterAppApi.mysql_connection()
                 cursor = data_base.cursor()
-
                 cursor.execute("SELECT date, report_number, reporter, location, data from reports")
-                data_get = cursor.fetchone()
-                print data_get
-                data_base.commit()
+                data_get = cursor.fetchall()
 
-                # convert info to json and pass bietch
+                # print data_get
+                # print str(type(data_get))
+                data_base.commit()
+                returnJsonList = []
+
+                for report in data_get:
+
+                    date = report[0]
+                    report_number = report[1]
+                    reporter = report[2]
+                    location = report[3]
+                    data = report[4]
+                    dictlocal = {'report_number':report_number, 'date': str(date), 'reporter': reporter, 'location':location, 'data': data }
+                    returnJsonList.append(dictlocal)
+
+                    #returnJsonList.append(json.dumps({'report_number':report_number, 'date': date, 'reporter': reporter, 'location':location, 'data': data }))
+                    # print "Report " + report_number
+                    # print "date " + str(date)
+                    # print "reporter " + reporter
+                    # print "location " + location
+                    # print "data " + data
+                dictContainer = {'reports':returnJsonList}
+                returnstring = json.dumps(dictContainer, sort_keys=True, indent=4, separators=(',', ': '))
+
 
                 datain._set_headers()
-                datain.wfile.write("<html><body><h1>Here are the reports</h1></body></html>")
+                datain.wfile.write(returnstring)
                 print "[DEBUG] - getWaterReport: Successful "
 
 
