@@ -68,8 +68,42 @@ class WaterAppApi():
         auth_string = auth_string[auth_string.index(" ") + 1:]
 
         if WaterAppApi.authenticate(auth_string):
+            data_base = WaterAppApi.mysql_connection()
+            cursor = data_base.cursor()
+
+            cursor.execute("SELECT username, created_at, email, account_type, number, password from users")
+            data_get = cursor.fetchone()
+            print data_get
+
+            # print str(type(data_get))
+            data_base.commit()
+            returnJsonList = []
+
+            username = data_get[0]
+            created_at = data_get[1]
+            email = data_get[2]
+            account_type = data_get[3]
+            number = data_get[4]
+            password = data_get[5]
+
+            print "username " + username
+            print "created_at " + str(created_at)
+            print "email " + email
+            print "account_type " + account_type
+            print "number " + str(number)
+            print "password" + password
+
+
+            dictlocal = {'username': username, 'created_at': str(created_at), 'email': email,
+                             'account_type': account_type, 'number': number, 'password': password}
+
+            returnstring = json.dumps(dictlocal, sort_keys=True, indent=4, separators=(',', ': '))
+
             datain._set_headers()
-            datain.wfile.write("<html><body><h1>Successful</h1></body></html>")
+            datain.wfile.write(returnstring)
+            print "[DEBUG] - getWaterReport: Successful "
+
+
         else:
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Login Failed, Wrong Password</h1></body></html>")
