@@ -71,7 +71,11 @@ class WaterAppApi():
             data_base = WaterAppApi.mysql_connection()
             cursor = data_base.cursor()
 
-            cursor.execute("SELECT username, created_at, email, account_type, number, password from users")
+            decoded_credidentals = base64.b64decode(auth_string)
+            password = decoded_credidentals[decoded_credidentals.index(":") + 1:]
+            email = decoded_credidentals[:decoded_credidentals.index(":")]
+
+            cursor.execute("SELECT username, created_at, email, account_type, number, password from users where email = \"%s\" " % email)
             data_get = cursor.fetchone()
             print data_get
 
@@ -207,19 +211,21 @@ class WaterAppApi():
                 reporter = parsedJson["reporter"]
                 location = parsedJson["location"]
                 data = parsedJson["data"]
-                print "[DEBUG] - AddWaterReport: datetime %s, reportnumber %s, reporter %s, location %s data %s " % (datetime,report_number, reporter, location,data)
+                type = parsedJson["type"]
+                print "[DEBUG] - AddWaterReport: datetime %s, reportnumber %s, reporter %s, location %s data %s type %s" % (datetime,report_number, reporter, location,data, type)
                 DataBase = WaterAppApi.mysql_connection()
                 cursor = DataBase.cursor()
 
-                cursor.execute("insert into reports (date, report_number, reporter, location, data) VALUES ( '%s', '%s', '%s', '%s', '%s')" % (
-                                   datetime, report_number, reporter, location, data))
+                cursor.execute("insert into reports (date, report_number, reporter, location, data, type) VALUES ( '%s', '%s', '%s', '%s', '%s', '%s')" % (
+                                   datetime, report_number, reporter, location, data, type))
                 DataBase.commit()
-                print "[DEBUG] - addWaterReport: Adding Water Report"
+                print "[DEBUG] - addWaterReport: Adding Report"
                 print "date " + parsedJson["date"]
                 print "report_number " + parsedJson["report_number"]
                 print bcolors.OKBLUE + "reporter " + parsedJson["reporter"] + bcolors.ENDC
                 print "location " + parsedJson["location"]
                 print "data " + parsedJson["data"]
+                print "type " + parsedJson["type"]
 
                 datain._set_headers()
                 datain.wfile.write("<html><body><h1>Report Added Successfully</h1></body></html>")
@@ -287,6 +293,106 @@ class WaterAppApi():
             datain._set_headers()
             datain.wfile.write("<html><body><h1>Fetch waterreports Failed</h1></body></html>")
 
+    @staticmethod
+    def getWaterSourceReports(Headers, datain):
+        auth_string = Headers["Authorization"]
+        auth_string = auth_string[auth_string.index(" ") + 1:]
+
+        if WaterAppApi.authenticate(auth_string):
+            try:
+                data_base = WaterAppApi.mysql_connection()
+                cursor = data_base.cursor()
+                cursor.execute("SELECT date, report_number, reporter, location, data from reports where type = \"WaterSourceReport\" ")
+                data_get = cursor.fetchall()
+
+                # print data_get
+                # print str(type(data_get))
+                data_base.commit()
+                returnJsonList = []
+
+                for report in data_get:
+                    date = report[0]
+                    report_number = report[1]
+                    reporter = report[2]
+                    location = report[3]
+                    data = report[4]
+                    dictlocal = {'report_number': report_number, 'date': str(date), 'reporter': reporter,
+                                 'location': location, 'data': data}
+                    returnJsonList.append(dictlocal)
+
+                    # returnJsonList.append(json.dumps({'report_number':report_number, 'date': date, 'reporter': reporter, 'location':location, 'data': data }))
+                    # print "Report " + report_number
+                    # print "date " + str(date)
+                    # print "reporter " + reporter
+                    # print "location " + location
+                    # print "data " + data
+                dictContainer = {'reports': returnJsonList}
+                returnstring = json.dumps(dictContainer, sort_keys=True, indent=4, separators=(',', ': '))
+
+                datain._set_headers()
+                datain.wfile.write(returnstring)
+                print "[DEBUG] - getWaterSourceReport: Successful "
+
+
+            except (KeyError):
+                print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- getWaterReport: Failed"
+                datain._set_headers()
+                datain.wfile.write("<html><body><h1>Fetch WaterSourceReports Failed</h1></body></html>")
+        else:
+            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- getWaterSourceReport: Authentication Failed"
+            datain._set_headers()
+            datain.wfile.write("<html><body><h1>Fetch WaterSourceReports Failed</h1></body></html>")
+
+    @staticmethod
+    def getWaterPurityReports(Headers, datain):
+        auth_string = Headers["Authorization"]
+        auth_string = auth_string[auth_string.index(" ") + 1:]
+
+        if WaterAppApi.authenticate(auth_string):
+            try:
+                data_base = WaterAppApi.mysql_connection()
+                cursor = data_base.cursor()
+                cursor.execute(
+                    "SELECT date, report_number, reporter, location, data from reports where type = \"WaterPurityReport\" ")
+                data_get = cursor.fetchall()
+
+                # print data_get
+                # print str(type(data_get))
+                data_base.commit()
+                returnJsonList = []
+
+                for report in data_get:
+                    date = report[0]
+                    report_number = report[1]
+                    reporter = report[2]
+                    location = report[3]
+                    data = report[4]
+                    dictlocal = {'report_number': report_number, 'date': str(date), 'reporter': reporter,
+                                 'location': location, 'data': data}
+                    returnJsonList.append(dictlocal)
+
+                    # returnJsonList.append(json.dumps({'report_number':report_number, 'date': date, 'reporter': reporter, 'location':location, 'data': data }))
+                    # print "Report " + report_number
+                    # print "date " + str(date)
+                    # print "reporter " + reporter
+                    # print "location " + location
+                    # print "data " + data
+                dictContainer = {'reports': returnJsonList}
+                returnstring = json.dumps(dictContainer, sort_keys=True, indent=4, separators=(',', ': '))
+
+                datain._set_headers()
+                datain.wfile.write(returnstring)
+                print "[DEBUG] - getWaterPurityReport: Successful "
+
+
+            except (KeyError):
+                print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- getWaterPurityReport: Failed"
+                datain._set_headers()
+                datain.wfile.write("<html><body><h1>Fetch WaterPurityReports Failed</h1></body></html>")
+        else:
+            print bcolors.FAIL + "[ERROR]" + bcolors.ENDC + "- getWaterPurityReport: Authentication Failed"
+            datain._set_headers()
+            datain.wfile.write("<html><body><h1>Fetch WaterPurityReports Failed</h1></body></html>")
 
     @staticmethod
     def deleteWaterReport(Headers, datain):

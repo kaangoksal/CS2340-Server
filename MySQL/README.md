@@ -17,6 +17,7 @@ CREATE TABLE `reports` (
   `reporter` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,  
   `location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,  
   `data` text COLLATE utf8mb4_unicode_ci NOT NULL,  
+  `type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,  
   PRIMARY KEY (`report_number`)  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
 
@@ -30,7 +31,7 @@ CREATE TABLE `users` (
   `account_type` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT 'user',  
   `token` varchar(4096) COLLATE utf8mb4_unicode_ci DEFAULT '',  
   `device_type` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT '',  
-  `number` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL,  
+  `number` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL, 
   PRIMARY KEY (`username`),  
   UNIQUE KEY `i_users_email` (`email`)  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;  

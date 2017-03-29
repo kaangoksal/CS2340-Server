@@ -92,6 +92,8 @@ if __name__ == "__main__":
     x.registerMethod(WaterAppApi.editUser, "/edit_user", "post")
     x.registerMethod(WaterAppApi.test, "/test", "post")
     x.registerMethod(WaterAppApi.getWaterReports, "/get_water_reports", "post")
+    x.registerMethod(WaterAppApi.getWaterPurityReports, "/get_water_purity_reports", "post")
+    x.registerMethod(WaterAppApi.getWaterSourceReports, "/get_water_source_reports", "post")
 
 
 
